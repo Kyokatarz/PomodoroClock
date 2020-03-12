@@ -18,12 +18,13 @@ var App = function (_React$Component) {
             running: false,
             sessionMin: 25,
             breakMin: 5,
-            minuteLeft: 25,
+            minuteLeft: 0,
             secondLeft: 0,
             clockType: 'Session'
+
         };
         _this.countSession = _this.countSession.bind(_this);
-        _this.countBreak = _this.countBreak.bind(_this);
+
         return _this;
     }
 
@@ -31,13 +32,17 @@ var App = function (_React$Component) {
         key: 'sessionDecrease',
         value: function sessionDecrease() {
             if (!this.state.running) {
-                if (this.state.sessionMin > 0) {
+                if (this.state.sessionMin > 1) {
+                    this.sessionHolder = this.state.sessionMin - 1;
                     this.setState(function (_ref) {
                         var sessionMin = _ref.sessionMin;
-                        return {
-                            sessionMin: sessionMin - 1
-                        };
+                        return { sessionMin: sessionMin - 1 };
                     });
+
+                    if (this.state.clockType == 'Session') {
+                        this.setState({ minuteLeft: this.sessionHolder,
+                            secondLeft: 0 });
+                    }
                 }
             }
         }
@@ -46,12 +51,16 @@ var App = function (_React$Component) {
         value: function sessionIncrease() {
             if (!this.state.running) {
                 if (this.state.sessionMin < 60) {
+                    this.sessionHolder = this.state.sessionMin + 1;
                     this.setState(function (_ref2) {
                         var sessionMin = _ref2.sessionMin;
-                        return {
-                            sessionMin: sessionMin + 1
-                        };
+                        return { sessionMin: sessionMin + 1 };
                     });
+
+                    if (this.state.clockType == 'Session') {
+                        this.setState({ minuteLeft: this.sessionHolder,
+                            secondLeft: 0 });
+                    }
                 }
             }
         }
@@ -59,13 +68,17 @@ var App = function (_React$Component) {
         key: 'breakDecrease',
         value: function breakDecrease() {
             if (!this.state.running) {
-                if (this.state.breakMin > 0) {
+                if (this.state.breakMin > 1) {
+                    this.breakHolder = this.state.breakMin - 1;
                     this.setState(function (_ref3) {
                         var breakMin = _ref3.breakMin;
-                        return {
-                            breakMin: breakMin - 1
-                        };
+                        return { breakMin: breakMin - 1 };
                     });
+
+                    if (this.state.clockType == 'Break') {
+                        this.setState({ minuteLeft: this.breakHolder,
+                            secondLeft: 0 });
+                    }
                 }
             }
         }
@@ -74,19 +87,23 @@ var App = function (_React$Component) {
         value: function breakIncrease() {
             if (!this.state.running) {
                 if (this.state.breakMin < 60) {
+                    this.breakHolder = this.state.breakMin + 1;
                     this.setState(function (_ref4) {
                         var breakMin = _ref4.breakMin;
-                        return {
-                            breakMin: breakMin + 1
-                        };
+                        return { breakMin: breakMin + 1 };
                     });
+
+                    if (this.state.clockType == 'Break') {
+                        this.setState({ minuteLeft: this.breakHolder,
+                            secondLeft: 0 });
+                    }
                 }
             }
         }
     }, {
         key: 'reset',
         value: function reset() {
-            this.setState({ sessionMin: 25, breakMin: 5, running: false });
+            this.setState({ sessionMin: 25, breakMin: 5, running: false, minuteLeft: 25, secondLeft: 0 });
         }
     }, {
         key: 'switchState',
@@ -99,63 +116,37 @@ var App = function (_React$Component) {
     }, {
         key: 'componentWillMount',
         value: function componentWillMount() {
-            var sessionHolder = this.state.sessionMin,
-                breakHolder = this.state.breakMin;
-            var minute = this.state.sessionMin,
-                second = this.state.secondLeft;
+            this.sessionHolder = this.state.sessionMin;
+            this.breakHolder = this.state.breakMin;
+            this.setState({ minuteLeft: this.sessionHolder });
         }
     }, {
         key: 'countSession',
         value: function countSession() {
 
-            var minute = this.state.sessionMin,
-                second = 0;
-
             if (this.state.running) {
-                if (second > 0) {
-                    second = second - 1;
+                if (this.state.secondLeft > 0) {
+
                     this.setState(function (_ref6) {
                         var secondLeft = _ref6.secondLeft;
-                        return { secondLeft: second };
+                        return { secondLeft: secondLeft - 1 };
                     });
                 }
 
-                if (second === 0) {
-                    if (minute === 0) {
-                        this.countBreak();
+                if (this.state.secondLeft === 0) {
+                    if (this.state.minuteLeft === 0) {
+                        if (this.state.clockType == 'Session') {
+                            this.setState({ minuteLeft: this.breakHolder, clockType: 'Break' });
+                        } else {
+                            this.setState({ minuteLeft: this.sessionHolder, clockType: 'Session' });
+                        }
                     } else {
-                        minute = minute - 1;
-                        second = 59;
+
                         this.setState(function (_ref7) {
                             var minuteLeft = _ref7.minuteLeft;
-                            return { minuteLeft: minute, secondLeft: second };
+                            return { minuteLeft: minuteLeft - 1, secondLeft: 59 };
                         });
                     }
-                }
-            }
-        }
-    }, {
-        key: 'countBreak',
-        value: function countBreak() {
-            this.setState({ minuteLeft: this.state.breakMin });
-            var minute = this.state.minuteLeft,
-                second = this.state.secondLeft;
-
-            if (second > 0) {
-                this.setState(function (_ref8) {
-                    var second = _ref8.second;
-                    return { second: second - 1 };
-                });
-            }
-
-            if (second === 0) {
-                if (minute === 0) {
-                    this.countSession();
-                } else {
-                    this.setState(function (_ref9) {
-                        var minute = _ref9.minute;
-                        return { minute: minute - 1, second: 59 };
-                    });
                 }
             }
         }
@@ -176,9 +167,11 @@ var App = function (_React$Component) {
                     'POMODORO CLOCK'
                 ),
                 React.createElement(SessionAdjust, { increase: this.sessionIncrease.bind(this), decrease: this.sessionDecrease.bind(this), sessionMin: this.state.sessionMin }),
+                React.createElement('br', null),
                 React.createElement(BreakAdjust, { increase: this.breakIncrease.bind(this), decrease: this.breakDecrease.bind(this), breakMin: this.state.breakMin }),
+                React.createElement('br', null),
                 React.createElement(Control, { reset: this.reset.bind(this), switchState: this.switchState.bind(this) }),
-                React.createElement(Display, { minuteLeft: this.state.minuteLeft, secondLeft: this.state.secondLeft })
+                React.createElement(Display, { minuteLeft: this.state.minuteLeft, secondLeft: this.state.secondLeft, clockType: this.state.clockType, sessionMin: this.state.sessionMin, 'default': this.state.default })
             );
         }
     }]);
@@ -193,8 +186,13 @@ var SessionAdjust = function SessionAdjust(props) {
         null,
         React.createElement(
             'div',
-            { onClick: props.increase },
+            { onClick: props.increase, id: 'session-increment' },
             'sessionIncrease'
+        ),
+        React.createElement(
+            'p',
+            { id: 'session-label' },
+            'Session Length'
         ),
         React.createElement(
             'div',
@@ -203,7 +201,7 @@ var SessionAdjust = function SessionAdjust(props) {
         ),
         React.createElement(
             'div',
-            { onClick: props.decrease },
+            { onClick: props.decrease, id: 'session-decrement' },
             'sessionDecrease'
         )
     );
@@ -216,8 +214,13 @@ var BreakAdjust = function BreakAdjust(props) {
         null,
         React.createElement(
             'div',
-            { onClick: props.increase },
+            { onClick: props.increase, id: 'break-increment' },
             'breakIncrease'
+        ),
+        React.createElement(
+            'p',
+            { id: 'break-label' },
+            'Break Length'
         ),
         React.createElement(
             'div',
@@ -226,7 +229,7 @@ var BreakAdjust = function BreakAdjust(props) {
         ),
         React.createElement(
             'div',
-            { onClick: props.decrease },
+            { onClick: props.decrease, id: 'break-decrement' },
             'breakDecrease'
         )
     );
@@ -238,12 +241,12 @@ var Control = function Control(props) {
         null,
         React.createElement(
             'div',
-            { onClick: props.switchState },
+            { onClick: props.switchState, id: 'start_stop' },
             'Play/Pause'
         ),
         React.createElement(
             'div',
-            { onClick: props.reset },
+            { onClick: props.reset, id: 'reset' },
             'Reset'
         )
     );
@@ -256,11 +259,15 @@ var Display = function Display(props) {
         null,
         React.createElement(
             'p',
-            null,
-            'Remaining Time: ',
-            props.minuteLeft,
+            { id: 'timer-label' },
+            props.clockType
+        ),
+        React.createElement(
+            'p',
+            { id: 'time-left' },
+            props.minuteLeft < 10 ? '0' + props.minuteLeft : props.minuteLeft,
             ':',
-            props.secondLeft
+            props.secondLeft < 10 ? '0' + props.secondLeft : props.secondLeft
         )
     );
 };

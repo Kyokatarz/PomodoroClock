@@ -5,12 +5,14 @@ class App extends React.Component{
            running: false,
            sessionMin: 25,
            breakMin: 5,
-           minuteLeft: 25,
+           minuteLeft: 0,
            secondLeft: 0,
-           clockType: 'Session'
+           clockType: 'Session',
+           
        }
        this.countSession = this.countSession.bind(this)
-       this.countBreak = this.countBreak.bind(this)
+       
+       
     }
     
 
@@ -18,10 +20,14 @@ class App extends React.Component{
     
     sessionDecrease(){
         if (!this.state.running){
-            if(this.state.sessionMin > 0){
-                this.setState(({sessionMin})=>({
-                    sessionMin: sessionMin - 1
-                }))
+            if(this.state.sessionMin > 1){
+                this.sessionHolder = this.state.sessionMin - 1 
+                this.setState(({sessionMin})=>({ sessionMin: sessionMin - 1   }))
+                
+                if (this.state.clockType == 'Session'){
+                    this.setState({minuteLeft: this.sessionHolder,
+                                    secondLeft: 0})
+                }
             }
         }
     }
@@ -29,35 +35,49 @@ class App extends React.Component{
     sessionIncrease(){
         if (!this.state.running){
             if(this.state.sessionMin < 60){
-                this.setState(({sessionMin})=>({
-                    sessionMin: sessionMin + 1
-                }))
+                this.sessionHolder = this.state.sessionMin + 1 
+                this.setState(({sessionMin})=>({ sessionMin: sessionMin + 1   }))
+                
+                if (this.state.clockType == 'Session'){
+                    this.setState({minuteLeft: this.sessionHolder,
+                                    secondLeft: 0})
+                }
+                
             }
         }
     }
     
     breakDecrease(){
         if (!this.state.running){
-            if(this.state.breakMin > 0){
-                this.setState(({breakMin})=>({
-                    breakMin: breakMin - 1
-                }))
+            if(this.state.breakMin > 1){
+                    this.breakHolder = this.state.breakMin - 1 
+                    this.setState(({breakMin})=>({ breakMin: breakMin - 1   }))
+                
+                    if (this.state.clockType == 'Break'){
+                        this.setState({minuteLeft: this.breakHolder,
+                                       secondLeft: 0})
+                        
+                    }
             }
         }
     }
-    
+        
     breakIncrease(){
         if (!this.state.running){
             if(this.state.breakMin < 60){
-                this.setState(({breakMin})=>({
-                    breakMin: breakMin + 1
-                }))
+                this.breakHolder = this.state.breakMin + 1 
+                this.setState(({breakMin})=>({ breakMin: breakMin + 1   }))
+                
+                if (this.state.clockType == 'Break'){
+                    this.setState({minuteLeft: this.breakHolder,
+                                       secondLeft: 0})
+                }
             }
         }
     }
     
     reset(){
-        this.setState({sessionMin: 25, breakMin: 5, running: false})
+        this.setState({sessionMin: 25, breakMin: 5, running: false, minuteLeft: 25, secondLeft: 0})
     }
     
     switchState(){
@@ -65,53 +85,37 @@ class App extends React.Component{
     }
     
     componentWillMount(){
-        const sessionHolder = this.state.sessionMin,
-              breakHolder = this.state.breakMin
-        let minute = this.state.sessionMin,
-            second = this.state.secondLeft
-            
+        this.sessionHolder = this.state.sessionMin
+        this.breakHolder = this.state.breakMin
+        this.setState({minuteLeft: this.sessionHolder})
     }
+    
     
     countSession(){
         
-        let minute = this.state.sessionMin,
-              second = 0
-        
         if (this.state.running){
-            if (second > 0){
-                second = second - 1
-                this.setState(({secondLeft}) => ({secondLeft: second}))
+            if (this.state.secondLeft > 0){
+               
+                this.setState(({secondLeft}) => ({secondLeft: secondLeft - 1}))
             }
 
-            if (second === 0){
-                if (minute === 0){
-                    this.countBreak()
+            if (this.state.secondLeft === 0){
+                if (this.state.minuteLeft === 0){
+                    if(this.state.clockType == 'Session'){
+                        this.setState({minuteLeft: this.breakHolder, clockType: 'Break'})
+                    } else {
+                        this.setState({minuteLeft: this.sessionHolder, clockType: 'Session'})
+                    }
+                    
                 } else {
-                    minute = minute - 1
-                    second = 59
-                    this.setState(({minuteLeft}) => ({minuteLeft: minute, secondLeft: second}))
-                }          
+                    
+                    this.setState(({minuteLeft}) => ({minuteLeft: minuteLeft - 1, secondLeft: 59}))
+                          
             }
         }
-    }  
-    
-    countBreak(){
-        this.setState({minuteLeft: this.state.breakMin})
-        const minute = this.state.minuteLeft,
-              second = this.state.secondLeft
-        
-        if (second > 0){
-            this.setState(({second}) => ({second: second - 1}))
-        }
-        
-        if (second === 0){
-            if (minute === 0){
-                this.countSession()
-            } else {
-                this.setState(({minute}) => ({minute: minute - 1, second: 59}))
-            }          
-        }
     }
+    }
+    
     
    componentDidMount(){
       this.myInterval = setInterval(this.countSession,1000)
@@ -123,9 +127,11 @@ class App extends React.Component{
         <div>
             <p>POMODORO CLOCK</p>
             <SessionAdjust increase = {this.sessionIncrease.bind(this)} decrease = {this.sessionDecrease.bind(this)} sessionMin = {this.state.sessionMin} />
+            <br/>
             <BreakAdjust increase = {this.breakIncrease.bind(this)} decrease = {this.breakDecrease.bind(this)} breakMin = {this.state.breakMin} />
+            <br/>
             <Control reset = {this.reset.bind(this)} switchState = {this.switchState.bind(this)}/>
-            <Display minuteLeft = {this.state.minuteLeft} secondLeft = {this.state.secondLeft}/>
+            <Display minuteLeft = {this.state.minuteLeft} secondLeft = {this.state.secondLeft} clockType = {this.state.clockType} sessionMin = {this.state.sessionMin} default = {this.state.default}/>
         </div>
         )
     }
@@ -135,9 +141,10 @@ let SessionAdjust = (props) => {
     
     return (
         <div>
-            <div onClick = {props.increase}>sessionIncrease</div>
+            <div onClick = {props.increase} id= 'session-increment'>sessionIncrease</div>
+            <p id='session-label'>Session Length</p>
             <div>{props.sessionMin}</div>
-            <div onClick = {props.decrease}>sessionDecrease</div>
+            <div onClick = {props.decrease} id= 'session-decrement'>sessionDecrease</div>
         </div>
     )
 }
@@ -146,9 +153,10 @@ let BreakAdjust = (props) => {
     
     return (
         <div>
-            <div onClick = {props.increase}>breakIncrease</div>
+            <div onClick = {props.increase} id = 'break-increment'>breakIncrease</div>
+            <p id='break-label'>Break Length</p>
             <div>{props.breakMin}</div>
-            <div onClick = {props.decrease}>breakDecrease</div>
+            <div onClick = {props.decrease} id = 'break-decrement'>breakDecrease</div>
         </div>
     )
 }
@@ -156,8 +164,8 @@ let BreakAdjust = (props) => {
 let Control = (props) =>{
     return(
         <div> 
-            <div onClick = {props.switchState}>Play/Pause</div>
-            <div onClick = {props.reset}>Reset</div>
+            <div onClick = {props.switchState} id='start_stop'>Play/Pause</div>
+            <div onClick = {props.reset} id = 'reset'>Reset</div>
         </div>
     )
 }
@@ -167,8 +175,8 @@ let Display = (props) => {
     
     return(
         <div>
-            
-            <p>Remaining Time: {props.minuteLeft}:{props.secondLeft}</p>
+            <p id='timer-label'>{props.clockType}</p>
+            <p id='time-left'>{props.minuteLeft < 10 ? `0${props.minuteLeft}` : props.minuteLeft}:{props.secondLeft < 10 ? `0${props.secondLeft}` : props.secondLeft}</p>
             
         </div>
     
