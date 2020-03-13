@@ -18,17 +18,32 @@ var App = function (_React$Component) {
             running: false,
             sessionMin: 25,
             breakMin: 5,
-            minuteLeft: 0,
+            minuteLeft: 25,
             secondLeft: 0,
-            clockType: 'Session'
+            clockType: 'Session',
+            abc: 10
 
         };
         _this.countSession = _this.countSession.bind(_this);
-
+        _this.playSound = _this.playSound.bind(_this);
+        _this.stopSound = _this.stopSound.bind(_this);
         return _this;
     }
 
     _createClass(App, [{
+        key: 'playSound',
+        value: function playSound() {
+            var audio = document.getElementById('beep');
+            audio.play();
+        }
+    }, {
+        key: 'stopSound',
+        value: function stopSound() {
+            var audio = document.getElementById('beep');
+            audio.pause();
+            audio.currentTime = 0;
+        }
+    }, {
         key: 'sessionDecrease',
         value: function sessionDecrease() {
             if (!this.state.running) {
@@ -103,7 +118,8 @@ var App = function (_React$Component) {
     }, {
         key: 'reset',
         value: function reset() {
-            this.setState({ sessionMin: 25, breakMin: 5, running: false, minuteLeft: 25, secondLeft: 0 });
+            this.setState({ sessionMin: 25, breakMin: 5, running: false, minuteLeft: 25, secondLeft: 0, clockType: 'Session' });
+            this.stopSound();
         }
     }, {
         key: 'switchState',
@@ -116,25 +132,32 @@ var App = function (_React$Component) {
     }, {
         key: 'componentWillMount',
         value: function componentWillMount() {
-            this.sessionHolder = this.state.sessionMin;
             this.breakHolder = this.state.breakMin;
+            this.sessionHolder = this.state.sessionMin;
             this.setState({ minuteLeft: this.sessionHolder });
         }
     }, {
         key: 'countSession',
         value: function countSession() {
+            var second = this.state.secondLeft,
+                minute = this.state.minuteLeft;
 
             if (this.state.running) {
-                if (this.state.secondLeft > 0) {
 
+                if (second > 0) {
                     this.setState(function (_ref6) {
                         var secondLeft = _ref6.secondLeft;
-                        return { secondLeft: secondLeft - 1 };
+                        return {
+                            secondLeft: secondLeft - 1
+                        };
                     });
                 }
 
-                if (this.state.secondLeft === 0) {
-                    if (this.state.minuteLeft === 0) {
+                if (second === 0) {
+
+                    if (minute === 0) {
+                        this.playSound();
+
                         if (this.state.clockType == 'Session') {
                             this.setState({ minuteLeft: this.breakHolder, clockType: 'Break' });
                         } else {
@@ -144,7 +167,11 @@ var App = function (_React$Component) {
 
                         this.setState(function (_ref7) {
                             var minuteLeft = _ref7.minuteLeft;
-                            return { minuteLeft: minuteLeft - 1, secondLeft: 59 };
+                            return {
+                                minuteLeft: minuteLeft - 1,
+                                secondLeft: 59
+
+                            };
                         });
                     }
                 }
@@ -171,7 +198,8 @@ var App = function (_React$Component) {
                 React.createElement(BreakAdjust, { increase: this.breakIncrease.bind(this), decrease: this.breakDecrease.bind(this), breakMin: this.state.breakMin }),
                 React.createElement('br', null),
                 React.createElement(Control, { reset: this.reset.bind(this), switchState: this.switchState.bind(this) }),
-                React.createElement(Display, { minuteLeft: this.state.minuteLeft, secondLeft: this.state.secondLeft, clockType: this.state.clockType, sessionMin: this.state.sessionMin, 'default': this.state.default })
+                React.createElement(Display, { minuteLeft: this.state.minuteLeft, secondLeft: this.state.secondLeft, clockType: this.state.clockType, sessionMin: this.state.sessionMin, 'default': this.state.default }),
+                React.createElement('audio', { src: url, id: 'beep' })
             );
         }
     }]);
@@ -196,7 +224,7 @@ var SessionAdjust = function SessionAdjust(props) {
         ),
         React.createElement(
             'div',
-            null,
+            { id: 'session-length' },
             props.sessionMin
         ),
         React.createElement(
@@ -224,7 +252,7 @@ var BreakAdjust = function BreakAdjust(props) {
         ),
         React.createElement(
             'div',
-            null,
+            { id: 'break-length' },
             props.breakMin
         ),
         React.createElement(
@@ -272,3 +300,5 @@ var Display = function Display(props) {
     );
 };
 ReactDOM.render(React.createElement(App, null), document.querySelector('#App'));
+
+var url = 'https://freesound.org/people/Freezeman/sounds/153213/download/153213__freezeman__beep1.wav';

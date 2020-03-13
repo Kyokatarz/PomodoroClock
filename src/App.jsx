@@ -5,18 +5,28 @@ class App extends React.Component{
            running: false,
            sessionMin: 25,
            breakMin: 5,
-           minuteLeft: 0,
+           minuteLeft: 25,
            secondLeft: 0,
            clockType: 'Session',
+           abc: 10
            
        }
        this.countSession = this.countSession.bind(this)
-       
-       
+       this.playSound = this.playSound.bind(this)
+       this.stopSound = this.stopSound.bind(this)
     }
     
+    playSound(){
+        let audio = document.getElementById('beep')
+        audio.play()
+    }
 
     
+    stopSound(){
+        let audio = document.getElementById('beep')
+        audio.pause()
+        audio.currentTime=0
+    }
     
     sessionDecrease(){
         if (!this.state.running){
@@ -77,7 +87,8 @@ class App extends React.Component{
     }
     
     reset(){
-        this.setState({sessionMin: 25, breakMin: 5, running: false, minuteLeft: 25, secondLeft: 0})
+        this.setState({sessionMin: 25, breakMin: 5, running: false, minuteLeft: 25, secondLeft: 0, clockType: 'Session'})
+        this.stopSound()
     }
     
     switchState(){
@@ -85,40 +96,57 @@ class App extends React.Component{
     }
     
     componentWillMount(){
-        this.sessionHolder = this.state.sessionMin
         this.breakHolder = this.state.breakMin
+        this.sessionHolder = this.state.sessionMin
         this.setState({minuteLeft: this.sessionHolder})
     }
     
     
     countSession(){
-        
+        let second = this.state.secondLeft,
+            minute = this.state.minuteLeft
+            
         if (this.state.running){
-            if (this.state.secondLeft > 0){
-               
-                this.setState(({secondLeft}) => ({secondLeft: secondLeft - 1}))
+            
+            if (second > 0){
+                    this.setState(({secondLeft}) => ({
+                        secondLeft: secondLeft - 1
+                    }))
             }
-
-            if (this.state.secondLeft === 0){
-                if (this.state.minuteLeft === 0){
+            
+            if (second === 0){
+                
+                if (minute === 0){
+                    this.playSound()
+                    
                     if(this.state.clockType == 'Session'){
                         this.setState({minuteLeft: this.breakHolder, clockType: 'Break'})
-                    } else {
+                    } 
+                    
+                    else {
                         this.setState({minuteLeft: this.sessionHolder, clockType: 'Session'})
+                        
                     }
-                    
-                } else {
-                    
-                    this.setState(({minuteLeft}) => ({minuteLeft: minuteLeft - 1, secondLeft: 59}))
-                          
+                
+                }
+                 
+                
+                else {
+                
+                    this.setState(({minuteLeft}) => ({
+                        minuteLeft: minuteLeft -1 ,
+                        secondLeft: 59,
+                        
+                    }))
+                }
             }
         }
     }
-    }
+
     
     
    componentDidMount(){
-      this.myInterval = setInterval(this.countSession,1000)
+      this.myInterval = setInterval(this.countSession, 1000)
    }
     
     
@@ -132,6 +160,10 @@ class App extends React.Component{
             <br/>
             <Control reset = {this.reset.bind(this)} switchState = {this.switchState.bind(this)}/>
             <Display minuteLeft = {this.state.minuteLeft} secondLeft = {this.state.secondLeft} clockType = {this.state.clockType} sessionMin = {this.state.sessionMin} default = {this.state.default}/>
+            <audio src = {url} id='beep'></audio>
+                
+                
+            
         </div>
         )
     }
@@ -143,7 +175,7 @@ let SessionAdjust = (props) => {
         <div>
             <div onClick = {props.increase} id= 'session-increment'>sessionIncrease</div>
             <p id='session-label'>Session Length</p>
-            <div>{props.sessionMin}</div>
+            <div id='session-length'>{props.sessionMin}</div>
             <div onClick = {props.decrease} id= 'session-decrement'>sessionDecrease</div>
         </div>
     )
@@ -155,7 +187,7 @@ let BreakAdjust = (props) => {
         <div>
             <div onClick = {props.increase} id = 'break-increment'>breakIncrease</div>
             <p id='break-label'>Break Length</p>
-            <div>{props.breakMin}</div>
+            <div id='break-length'>{props.breakMin}</div>
             <div onClick = {props.decrease} id = 'break-decrement'>breakDecrease</div>
         </div>
     )
@@ -184,3 +216,5 @@ let Display = (props) => {
     
 }
     ReactDOM.render(<App/>, document.querySelector('#App'))
+    
+const url = 'https://freesound.org/people/Freezeman/sounds/153213/download/153213__freezeman__beep1.wav'     
