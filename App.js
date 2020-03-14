@@ -20,8 +20,7 @@ var App = function (_React$Component) {
             breakMin: 5,
             minuteLeft: 25,
             secondLeft: 0,
-            clockType: 'Session',
-            abc: 10
+            clockType: 'Session'
 
         };
         _this.countSession = _this.countSession.bind(_this);
@@ -187,18 +186,20 @@ var App = function (_React$Component) {
         value: function render() {
             return React.createElement(
                 'div',
-                null,
+                { id: 'container' },
                 React.createElement(
                     'p',
-                    null,
+                    { id: 'title' },
                     'POMODORO CLOCK'
                 ),
-                React.createElement(SessionAdjust, { increase: this.sessionIncrease.bind(this), decrease: this.sessionDecrease.bind(this), sessionMin: this.state.sessionMin }),
-                React.createElement('br', null),
-                React.createElement(BreakAdjust, { increase: this.breakIncrease.bind(this), decrease: this.breakDecrease.bind(this), breakMin: this.state.breakMin }),
-                React.createElement('br', null),
-                React.createElement(Control, { reset: this.reset.bind(this), switchState: this.switchState.bind(this) }),
-                React.createElement(Display, { minuteLeft: this.state.minuteLeft, secondLeft: this.state.secondLeft, clockType: this.state.clockType, sessionMin: this.state.sessionMin, 'default': this.state.default }),
+                React.createElement(
+                    'div',
+                    { id: 'components' },
+                    React.createElement(SessionAdjust, { increase: this.sessionIncrease.bind(this), decrease: this.sessionDecrease.bind(this), sessionMin: this.state.sessionMin }),
+                    React.createElement(Display, { minuteLeft: this.state.minuteLeft, secondLeft: this.state.secondLeft, clockType: this.state.clockType, sessionMin: this.state.sessionMin, 'default': this.state.default }),
+                    React.createElement(BreakAdjust, { increase: this.breakIncrease.bind(this), decrease: this.breakDecrease.bind(this), breakMin: this.state.breakMin })
+                ),
+                React.createElement(Control, { reset: this.reset.bind(this), switchState: this.switchState.bind(this), running: this.state.running }),
                 React.createElement('audio', { src: url, id: 'beep' })
             );
         }
@@ -211,16 +212,16 @@ var SessionAdjust = function SessionAdjust(props) {
 
     return React.createElement(
         'div',
-        null,
-        React.createElement(
-            'div',
-            { onClick: props.increase, id: 'session-increment' },
-            'sessionIncrease'
-        ),
+        { className: 'adjust' },
         React.createElement(
             'p',
             { id: 'session-label' },
             'Session Length'
+        ),
+        React.createElement(
+            'div',
+            { onClick: props.increase, id: 'session-increment' },
+            React.createElement('i', { className: 'fas fa-caret-up' })
         ),
         React.createElement(
             'div',
@@ -230,7 +231,7 @@ var SessionAdjust = function SessionAdjust(props) {
         React.createElement(
             'div',
             { onClick: props.decrease, id: 'session-decrement' },
-            'sessionDecrease'
+            React.createElement('i', { className: 'fas fa-caret-down' })
         )
     );
 };
@@ -239,16 +240,16 @@ var BreakAdjust = function BreakAdjust(props) {
 
     return React.createElement(
         'div',
-        null,
-        React.createElement(
-            'div',
-            { onClick: props.increase, id: 'break-increment' },
-            'breakIncrease'
-        ),
+        { className: 'adjust' },
         React.createElement(
             'p',
             { id: 'break-label' },
             'Break Length'
+        ),
+        React.createElement(
+            'div',
+            { onClick: props.increase, id: 'break-increment' },
+            React.createElement('i', { 'class': 'fas fa-caret-up' })
         ),
         React.createElement(
             'div',
@@ -258,7 +259,7 @@ var BreakAdjust = function BreakAdjust(props) {
         React.createElement(
             'div',
             { onClick: props.decrease, id: 'break-decrement' },
-            'breakDecrease'
+            React.createElement('i', { 'class': 'fas fa-caret-down' })
         )
     );
 };
@@ -266,16 +267,16 @@ var BreakAdjust = function BreakAdjust(props) {
 var Control = function Control(props) {
     return React.createElement(
         'div',
-        null,
+        { id: 'control' },
         React.createElement(
             'div',
             { onClick: props.switchState, id: 'start_stop' },
-            'Play/Pause'
+            props.running ? React.createElement('i', { className: 'fas fa-pause' }) : React.createElement('i', { 'class': 'fas fa-play' })
         ),
         React.createElement(
             'div',
             { onClick: props.reset, id: 'reset' },
-            'Reset'
+            React.createElement('i', { className: 'fas fa-undo-alt' })
         )
     );
 };
@@ -284,10 +285,11 @@ var Display = function Display(props) {
 
     return React.createElement(
         'div',
-        null,
+        { id: 'display' },
         React.createElement(
             'p',
             { id: 'timer-label' },
+            'On: ',
             props.clockType
         ),
         React.createElement(
